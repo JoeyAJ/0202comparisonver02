@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>项目竞争力战略分析看板</title>
+    <title>项目竞争力战略分析看板 - GitHub部署版</title>
     
     <!-- 1. 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,14 +22,14 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { font-family: "Microsoft YaHei", sans-serif; }
+        body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+        .radar-container .recharts-polar-grid-concentric-path { stroke: #e2e8f0; }
     </style>
 </head>
 <body class="bg-slate-50">
     <div id="root"></div>
 
     <script type="text/babel">
-        // 确保 React 和 Recharts 已加载
         const { useState } = React;
         const { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } = window.Recharts;
 
@@ -50,63 +50,83 @@
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         );
 
-        // --- 数据源 ---
-        const dataPhD = [
-            { subject: '学制效率', A: 3, B: 4, fullMark: 5 },
-            { subject: '入学金优势', A: 3, B: 1, fullMark: 5 },
-            { subject: '学费优势', A: 4, B: 1, fullMark: 5 },
-            { subject: '奖学金', A: 3, B: 2, fullMark: 5 },
-        ];
-
-        const dataUndergrad = [
-            { subject: 'QS排名', A: 3, B: 1, fullMark: 5 },
-            { subject: '开办时间/效率', A: 3, B: 4, fullMark: 5 },
-            { subject: '合作院校', A: 5, B: 2, fullMark: 5 },
-            { subject: '学费优势', A: 4, B: 2, fullMark: 5 },
-            { subject: '奖学金', A: 4, B: 2, fullMark: 5 },
-        ];
-
+        // --- 核心数据源 (严格匹配图片) ---
+        
+        // 1. 3+1 专升本
         const dataTopUp = [
-            { subject: '可选专业', A: 4, B: 1, fullMark: 5 },
-            { subject: '入学金优势', A: 4, B: 1, fullMark: 5 },
-            { subject: '学费优势', A: 5, B: 1, fullMark: 5 },
-            { subject: '奖学金', A: 4, B: 1, fullMark: 5 },
-            { subject: '留学生服务', A: 3, B: 1, fullMark: 5 },
+            { subject: '可选专业', A: 3.5, B: 1.0 },
+            { subject: '入学金优势', A: 4.5, B: 1.2 },
+            { subject: '学费优势', A: 4.8, B: 1.2 },
+            { subject: '奖学金', A: 4.0, B: 0.8 },
+            { subject: '留学生服务', A: 3.5, B: 1.0 },
         ];
 
+        // 2. 1+3 委托培养
+        const dataUndergrad = [
+            { subject: 'QS排名', A: 3.5, B: 0.5 },
+            { subject: '开办时间', A: 0.5, B: 4.0 },
+            { subject: '合作院校数量', A: 4.8, B: 1.5 },
+            { subject: '学费优势', A: 4.0, B: 1.5 },
+            { subject: '奖学金优势', A: 4.0, B: 4.0 },
+        ];
+
+        // 3. 硕士项目 (1-1.5年)
         const dataMaster = [
-            { subject: '学制效率', A: 3, B: 5, fullMark: 5 },
-            { subject: '宿舍提供', A: 3, B: 1, fullMark: 5 },
-            { subject: '入学金优势', A: 3, B: 1, fullMark: 5 },
-            { subject: '学费优势', A: 4, B: 1, fullMark: 5 },
-            { subject: '奖学金', A: 3, B: 2, fullMark: 5 },
+            { subject: '学制', A: 4.0, B: 5.0 },
+            { subject: '宿舍提供情况', A: 4.5, B: 0.5 },
+            { subject: '入学金优势', A: 4.5, B: 1.0 },
+            { subject: '学费优势', A: 4.8, B: 1.5 },
+            { subject: '奖学金优势', A: 3.5, B: 1.0 },
         ];
 
+        // 4. 博士项目 (2-2.5年)
+        const dataPhD = [
+            { subject: '学制', A: 3.0, B: 4.0 },
+            { subject: '入学金优势', A: 4.5, B: 1.5 },
+            { subject: '学费优势', A: 4.8, B: 1.8 },
+            { subject: '奖学金', A: 3.5, B: 1.0 },
+        ];
+
+        // 综合看板模拟数据
         const summaryDataCurrent = [
-            { subject: '经济性', market: 4.2, school: 1.5, proposed: 1.5 }, 
-            { subject: '时间效率', market: 3.0, school: 4.5, proposed: 4.5 },
-            { subject: '资源硬实力', market: 4.0, school: 1.8, proposed: 2.0 },
-            { subject: '服务软实力', market: 3.0, school: 1.2, proposed: 4.8 }, 
+            { subject: '费用优势', market: 4.5, school: 1.3, proposed: 1.3 }, 
+            { subject: '时间效率', market: 3.0, school: 4.6, proposed: 4.6 },
+            { subject: '资源硬实力', market: 4.0, school: 1.5, proposed: 2.0 },
+            { subject: '服务软实力', market: 3.5, school: 1.5, proposed: 4.8 }, 
         ];
 
         const App = () => {
             const [activeTab, setActiveTab] = useState('summary');
             const [showProposed, setShowProposed] = useState(false);
 
-            const renderRadar = (data, title, subtitle) => (
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center">
+            const renderRadar = (data, title, subtitle, color = "#f97316") => (
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center radar-container">
                     <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-                    <p className="text-sm text-slate-500 mb-4">{subtitle}</p>
+                    <p className="text-sm text-slate-500 mb-2">{subtitle}</p>
                     <div className="w-full h-64">
                         <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
                                 <PolarGrid stroke="#e2e8f0" />
-                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
                                 <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
-                                <Radar name="市场/竞品平均" dataKey="A" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} />
-                                <Radar name="我校现状" dataKey="B" stroke="#f97316" fill="#f97316" fillOpacity={0.4} />
-                                <Legend />
-                                <Tooltip />
+                                <Radar 
+                                    name="大学综合水平/市场平均" 
+                                    dataKey="A" 
+                                    stroke="#3b82f6" 
+                                    fill="#3b82f6" 
+                                    fillOpacity={0.05} 
+                                    strokeWidth={2}
+                                />
+                                <Radar 
+                                    name="又松大学" 
+                                    dataKey="B" 
+                                    stroke={color} 
+                                    fill={color} 
+                                    fillOpacity={0.4} 
+                                    strokeWidth={3}
+                                />
+                                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                             </RadarChart>
                         </ResponsiveContainer>
                     </div>
@@ -114,61 +134,72 @@
             );
 
             return (
-                <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-800">
-                    <header className="mb-8 max-w-5xl mx-auto">
-                        <h1 className="text-3xl font-bold text-slate-900 mb-2">项目竞争力战略分析看板</h1>
-                        <p className="text-slate-600 flex items-center gap-2">
-                            <Target size={18} />
-                            <span>核心议题：如何在费用劣势（刚性约束）下，通过<span className="font-bold text-orange-600">非价格竞争</span>实现突围？</span>
+                <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
+                    <header className="mb-8 max-w-6xl mx-auto">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="bg-orange-600 p-2 rounded-lg text-white">
+                                <Target size={24} />
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">项目竞争力战略分析看板</h1>
+                        </div>
+                        <p className="text-slate-600 max-w-2xl">
+                            基于市场平均水平与我校现状数据的量化分析。核心挑战：如何在<span className="font-bold text-orange-600">价格劣势</span>下，通过提升服务与效率实现错位竞争。
                         </p>
                     </header>
 
-                    <main className="max-w-5xl mx-auto space-y-8">
-                        <div className="flex flex-wrap gap-2 pb-4 border-b border-slate-200">
+                    <main className="max-w-6xl mx-auto space-y-6">
+                        <div className="flex gap-2 p-1 bg-slate-200/50 rounded-xl w-fit">
                             <button 
                                 onClick={() => setActiveTab('summary')}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${activeTab === 'summary' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                                className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === 'summary' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                             >
-                                <Layers size={18} /> 综合战略视图
+                                <Layers size={18} /> 战略全局观
                             </button>
                             <button 
                                 onClick={() => setActiveTab('details')}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${activeTab === 'details' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                                className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === 'details' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                             >
                                 <TrendingUp size={18} /> 分项目详情
                             </button>
                         </div>
 
                         {activeTab === 'summary' && (
-                            <div className="space-y-6">
-                                <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="space-y-6 animate-in fade-in duration-500">
+                                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+                                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                         <div>
-                                            <h2 className="text-xl font-bold mb-1">战略模拟：软实力突围</h2>
-                                            <p className="text-slate-300 text-sm">点击开关，模拟如果我们大幅提升服务、宿舍与配套设施后的效果。</p>
+                                            <h2 className="text-xl font-bold mb-1">非价格竞争：战略模拟</h2>
+                                            <p className="text-slate-400 text-sm">模拟通过提升“留学生服务”与“配套设施”后，项目整体竞争力的变化趋势。</p>
                                         </div>
-                                        <button 
-                                            onClick={() => setShowProposed(!showProposed)}
-                                            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${showProposed ? 'bg-green-500' : 'bg-slate-600'}`}
-                                        >
-                                            <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition transition-transform duration-200 ${showProposed ? 'translate-x-7' : 'translate-x-1'}`} />
-                                        </button>
+                                        <div className="flex items-center gap-3 bg-slate-800 p-2 rounded-xl border border-slate-700">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">服务驱动模式</span>
+                                            <button 
+                                                onClick={() => setShowProposed(!showProposed)}
+                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${showProposed ? 'bg-green-500' : 'bg-slate-600'}`}
+                                            >
+                                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition transition-transform duration-200 ${showProposed ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </button>
+                                        </div>
                                     </div>
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -mr-20 -mt-20"></div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                        <h3 className="font-bold text-lg mb-4 text-center">全校项目综合竞争力模型</h3>
-                                        <div className="h-80 w-full">
+                                <div className="grid lg:grid-cols-3 gap-6">
+                                    <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                        <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+                                            <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
+                                            全项目综合竞争力雷达
+                                        </h3>
+                                        <div className="h-96 w-full">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={summaryDataCurrent}>
+                                                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={summaryDataCurrent}>
                                                     <PolarGrid />
                                                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#334155', fontWeight: 600 }} />
-                                                    <PolarRadiusAxis angle={30} domain={[0, 5]} />
-                                                    <Radar name="市场平均水平" dataKey="market" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} />
-                                                    <Radar name="我校现状 (高费/低服务)" dataKey="school" stroke="#f97316" strokeWidth={2} fill="#f97316" fillOpacity={0.3} />
+                                                    <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} />
+                                                    <Radar name="市场平均水平" dataKey="market" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.05} />
+                                                    <Radar name="又松大学现状" dataKey="school" stroke="#f97316" strokeWidth={3} fill="#f97316" fillOpacity={0.3} />
                                                     {showProposed && (
-                                                        <Radar name="战略突围后 (服务驱动)" dataKey="proposed" stroke="#22c55e" strokeWidth={3} fill="#22c55e" fillOpacity={0.4} strokeDasharray="5 5" />
+                                                        <Radar name="战略突围目标" dataKey="proposed" stroke="#22c55e" strokeWidth={3} fill="#22c55e" fillOpacity={0.4} strokeDasharray="5 5" />
                                                     )}
                                                     <Legend />
                                                     <Tooltip />
@@ -177,32 +208,38 @@
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
-                                            <h4 className="flex items-center gap-2 font-bold text-orange-800 mb-2">
-                                                <AlertCircle size={18} />
-                                                现状痛点分析
+                                    <div className="space-y-6">
+                                        <div className="bg-white p-5 rounded-2xl border border-orange-100 shadow-sm">
+                                            <h4 className="flex items-center gap-2 font-bold text-orange-800 mb-4">
+                                                <AlertCircle size={20} />
+                                                关键痛点
                                             </h4>
-                                            <ul className="list-disc list-inside text-sm text-orange-800 space-y-2">
-                                                <li><strong>价格劣势固化：</strong> 在所有四张图中，"学费/入学金优势"指标均大幅落后于市场平均。</li>
-                                                <li><strong>硬指标短板：</strong> 排名(QS)与合作院校数量短期内难以快速提升。</li>
-                                                <li><strong>3+1项目最危急：</strong> 该项目雷达图面积最小，竞争力全面落后。</li>
-                                            </ul>
+                                            <div className="space-y-4">
+                                                <div className="flex gap-3">
+                                                    <div className="text-orange-500 font-bold">01</div>
+                                                    <p className="text-sm text-slate-600"><span className="font-bold text-slate-800">价格极度劣势：</span>所有项目在“学费/入学金”维度均处于低位，难以吸引价格敏感型客户。</p>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <div className="text-orange-500 font-bold">02</div>
+                                                    <p className="text-sm text-slate-600"><span className="font-bold text-slate-800">资源匹配度低：</span>QS排名与宿舍提供情况是目前阻碍硕士项目转化的最大短板。</p>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
-                                            <h4 className="flex items-center gap-2 font-bold text-blue-800 mb-2">
-                                                <ArrowRight size={18} />
-                                                战略突围方向
+                                        <div className="bg-blue-600 p-5 rounded-2xl text-white shadow-lg shadow-blue-200">
+                                            <h4 className="flex items-center gap-2 font-bold mb-4">
+                                                <ArrowRight size={20} />
+                                                突围策略
                                             </h4>
-                                            <p className="text-sm text-blue-800 mb-3">
-                                                既定前提：费用无法降低。<br/>
-                                                <strong>唯一解法：拉长“服务软实力”象限。</strong>
-                                            </p>
-                                            <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
-                                                <li><strong>宿舍升级 (硕士项目)：</strong> 提供高标准单人间，弥补高学费痛点。</li>
-                                                <li><strong>一站式服务 (3+1/本科)：</strong> 接机、落户、签证托管，增加图形面积。</li>
-                                                <li><strong>时间换空间 (博士/硕士)：</strong> 强化“学制效率”，打出“更快毕业”的王牌。</li>
+                                            <ul className="space-y-3 text-sm text-blue-50">
+                                                <li className="flex items-start gap-2">
+                                                    <div className="mt-1.5 w-1.5 h-1.5 bg-blue-300 rounded-full flex-shrink-0"></div>
+                                                    <span><strong className="text-white">时间换金钱：</strong>利用学制极短（硕士1年/博士2年）的核心优势，对冲高昂学费。</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <div className="mt-1.5 w-1.5 h-1.5 bg-blue-300 rounded-full flex-shrink-0"></div>
+                                                    <span><strong className="text-white">保姆级服务：</strong>在3+1等项目中强化“留学生服务”，提供就业、签证一站式闭环。</span>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
@@ -211,14 +248,18 @@
                         )}
 
                         {activeTab === 'details' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {renderRadar(dataPhD, "博士项目 (2-2.5年)", "优势：学制短 | 劣势：费用")}
-                                {renderRadar(dataUndergrad, "本科项目 (1+3)", "优势：开办灵活 | 劣势：QS/合作数")}
-                                {renderRadar(dataTopUp, "专升本 (3+1)", "全面告急，亟需服务增值")}
-                                {renderRadar(dataMaster, "硕士项目 (1-1.5年)", "优势：学制 | 痛点：宿舍/费用")}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+                                {renderRadar(dataTopUp, "3+1 专升本项目", "核心挑战：可选专业少/费用高", "#f43f5e")}
+                                {renderRadar(dataUndergrad, "1+3 委托培养项目", "核心优势：开办时间早/奖学金高", "#f97316")}
+                                {renderRadar(dataMaster, "硕士项目 (1-1.5年制)", "核心优势：学制极短 | 短板：宿舍", "#8b5cf6")}
+                                {renderRadar(dataPhD, "博士项目 (2-2.5年制)", "核心优势：毕业效率 | 劣势：费用", "#06b6d4")}
                             </div>
                         )}
                     </main>
+                    
+                    <footer className="max-w-6xl mx-auto mt-12 pb-8 text-center text-slate-400 text-xs">
+                        © 2024 项目竞争力分析系统 · 内部机密
+                    </footer>
                 </div>
             );
         };
